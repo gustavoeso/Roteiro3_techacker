@@ -1,14 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrivacyGuardian</title>
     <style>
-      body { font-family: Arial, sans-serif; width: 200px; padding: 10px; }
+      body { font-family: Arial, sans-serif; padding: 10px; }
       h1 { font-size: 16px; }
+      .info { margin-bottom: 10px; }
     </style>
   </head>
   <body>
     <h1>PrivacyGuardian</h1>
-    <div id="status">Monitorando...</div>
+    
+    <div class="info">
+      <strong>Conexões de Terceiros:</strong> 
+      <span id="thirdPartyConnections">Carregando...</span>
+    </div>
+
+    <div class="info">
+      <strong>Cookies (first party / third party):</strong> 
+      <span id="cookiesInfo">Carregando...</span>
+    </div>
+
+    <div class="info">
+      <strong>Itens no Local Storage:</strong> 
+      <span id="localStorageInfo">Carregando...</span>
+    </div>
+
+    <div class="info">
+      <strong>Canvas Fingerprint Detectado:</strong> 
+      <span id="canvasFingerprint">Carregando...</span>
+    </div>
+
+    <script src="popup.js"></script>
   </body>
 </html>
