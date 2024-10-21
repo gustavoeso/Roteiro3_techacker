@@ -4,49 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrivacyGuardian</title>
-    <style>
-      body { font-family: Arial, sans-serif; padding: 10px; }
-      h1 { font-size: 16px; }
-      .info { margin-bottom: 10px; }
-      button { padding: 5px 10px; background-color: #007BFF; color: white; border: none; cursor: pointer; margin: 5px 0; }
-      button:hover { background-color: #0056b3; }
-    </style>
+    <link rel="stylesheet" href="styles.css"> <!-- Adicionando o CSS -->
   </head>
   <body>
     <h1>PrivacyGuardian</h1>
-    
-    <div class="info">
-      <strong>Third Party Connections:</strong> 
-      <span id="thirdPartyConnections">Loading...</span>
+
+    <!-- Subgrupo: Nota de Privacidade -->
+    <div class="group">
+      <h2>Nota de Privacidade</h2>
+      <div class="score-container">
+        <div id="scoreBar" class="score-bar">
+          <span id="scoreText">Privacy Score: 100%</span>
+        </div>
+      </div>
     </div>
 
-    <div class="info">
-      <strong>Cookies (First Party / Third Party):</strong> 
-      <span id="cookiesInfo">Loading...</span>
+    <!-- Subgrupo: Conexões e Cookies -->
+    <div class="group">
+      <h2>Conexões e Cookies</h2>
+      <div class="info">
+        <strong>Third Party Connections:</strong> 
+        <span id="thirdPartyConnectionsCount">0</span> 
+        <button id="toggleConnections" class="toggle-btn">⯆</button>
+      </div>
+      <ul id="thirdPartyConnectionsList" class="hidden">
+        <!-- Lista de conexões será inserida aqui -->
+      </ul>
+      <div class="info">
+        <strong>Cookies (First Party / Third Party):</strong> 
+        <span id="cookiesInfo">Loading...</span>
+      </div>
     </div>
 
-    <div class="info">
-      <strong>Local Storage Items:</strong> 
-      <span id="localStorageInfo">Loading...</span>
+    <!-- Subgrupo: Dados Armazenados -->
+    <div class="group">
+      <h2>Dados Armazenados</h2>
+      <div class="info">
+        <strong>Local Storage Items:</strong> 
+        <span id="localStorageInfo">Loading...</span>
+      </div>
+      <div class="info">
+        <strong>Canvas Fingerprint Detected:</strong> 
+        <span id="canvasFingerprint">Loading...</span>
+      </div>
     </div>
 
-    <div class="info">
-      <strong>Canvas Fingerprint Detected:</strong> 
-      <span id="canvasFingerprint">Loading...</span>
+    <!-- Subgrupo: Hijacking -->
+    <div class="group">
+      <h2>Segurança</h2>
+      <div class="info">
+        <strong>Browser Hijacking Detected:</strong> 
+        <span id="hijackingDetected">Loading...</span>
+      </div>
     </div>
 
-    <div class="info">
-      <strong>Browser Hijacking Detected:</strong> 
-      <span id="hijackingDetected">Loading...</span>
+    <!-- Botões de Ação (em posição fixa) -->
+    <div class="actions fixed">
+      <button id="reloadPage" class="reload">Recarregar Página</button>
+      <button id="resetHijacking" class="reset">Resetar Hijacking</button>
     </div>
-
-    <div class="info">
-      <strong>Privacy Score:</strong> 
-      <span id="privacyScore">Calculating...</span>
-    </div>
-
-    <button id="resetHijacking">Resetar Hijacking</button>
-    <button id="reloadPage">Recarregar Página</button>
 
     <script src="popup.js"></script>
   </body>

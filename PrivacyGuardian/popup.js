@@ -1,21 +1,31 @@
-// Função para atualizar o número de tentativas de hijacking por domínio
-function updateHijackingCount() {
-  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-    const domain = new URL(tabs[0].url).hostname;
-    console.log("Recuperando tentativas de hijacking para o domínio:", domain);
-    
-    chrome.storage.local.get(['hijackingPerDomain'], function(result) {
-      console.log("Dados de hijacking no storage:", result.hijackingPerDomain);
+// Função para alternar a visibilidade das third-party connections
+function toggleThirdPartyConnections() {
+  const list = document.getElementById('thirdPartyConnectionsList');
+  const toggleButton = document.getElementById('toggleConnections');
   
-      let hijackingCount = result.hijackingPerDomain && result.hijackingPerDomain[domain] ? result.hijackingPerDomain[domain] : 0;
-      
-      document.getElementById('hijackingDetected').innerText = hijackingCount > 0 
-        ? `Yes - ${hijackingCount} tentativas detectadas no domínio` 
-        : "No";
+  if (list.classList.contains('hidden')) {
+    list.classList.remove('hidden');
+    toggleButton.innerText = "⯅"; // Setinha para cima
+  } else {
+    list.classList.add('hidden');
+    toggleButton.innerText = "⯆"; // Setinha para baixo
+  }
+}
 
-      // Atualizar a pontuação de privacidade com os dados mais recentes
-      updatePrivacyScore(hijackingCount);
-    });
+// Atualizar a lista de conexões de terceiros no popup
+function updateThirdPartyConnections(connections) {
+  const list = document.getElementById('thirdPartyConnectionsList');
+  const count = document.getElementById('thirdPartyConnectionsCount');
+
+  count.innerText = connections.length;
+
+  // Limpar lista antes de atualizar
+  list.innerHTML = '';
+  
+  connections.forEach(connection => {
+    const listItem = document.createElement('li');
+    listItem.innerText = connection;
+    list.appendChild(listItem);
   });
 }
 
@@ -85,13 +95,44 @@ function updatePrivacyScore(hijackingCount) {
     let hijackingDetected = result.hijackingDetected || hijackingCount > 0;
     
     const privacyScore = calculatePrivacyScore(thirdPartyConnections, thirdPartyCookies, localStorageItems, canvasFingerprint, hijackingDetected ? 1 : hijackingCount);
-    document.getElementById('privacyScore').innerText = `Privacy Score: ${privacyScore}%`;
+    
+    // Atualizar o texto e a largura da barra de progresso
+    const scoreBar = document.getElementById('scoreBar');
+    const scoreText = document.getElementById('scoreText');
+    
+    scoreBar.style.width = `${privacyScore}%`;
+    scoreText.innerText = `Privacy Score: ${privacyScore}%`;
+
+    // Atualizar a cor da barra com base na pontuação
+    if (privacyScore >= 75) {
+      scoreBar.style.backgroundColor = "green";
+    } else if (privacyScore >= 50) {
+      scoreBar.style.backgroundColor = "orange";
+    } else {
+      scoreBar.style.backgroundColor = "red";
+    }
   });
 }
 
-// Adicionar listeners para os botões
-document.getElementById('resetHijacking').addEventListener('click', resetHijackingCount);
-document.getElementById('reloadPage').addEventListener('click', reloadPage);
+// Função para atualizar o número de tentativas de hijacking por domínio
+function updateHijackingCount() {
+  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+    const domain = new URL(tabs[0].url).hostname;
+    console.log("Recuperando tentativas de hijacking para o domínio:", domain);
+    
+    chrome.storage.local.get(['hijackingPerDomain'], function(result) {
+      console.log("Dados de hijacking no storage:", result.hijackingPerDomain);
+  
+      let hijackingCount = result.hijackingPerDomain && result.hijackingPerDomain[domain] ? result.hijackingPerDomain[domain] : 0;
+      
+      document.getElementById('hijackingDetected').innerText = hijackingCount > 0 
+        ? `Yes - ${hijackingCount} tentativas detectadas no domínio` 
+        : "No";
+
+      updatePrivacyScore(hijackingCount);
+    });
+  });
+}
 
 // Receber as mensagens do background.js e atualizar o popup
 chrome.runtime.onMessage.addListener(function(message) {
@@ -100,13 +141,20 @@ chrome.runtime.onMessage.addListener(function(message) {
   const localStorageInfo = message.localStorageInfo || "Nenhum";
   const canvasFingerprint = message.canvasFingerprint || "Não";
 
-  document.getElementById('thirdPartyConnections').innerText = thirdPartyConnections.length ? thirdPartyConnections.join(", ") : "Nenhuma";
+  updateThirdPartyConnections(thirdPartyConnections);
   document.getElementById('cookiesInfo').innerText = cookiesInfo;
   document.getElementById('localStorageInfo').innerText = localStorageInfo;
   document.getElementById('canvasFingerprint').innerText = canvasFingerprint;
 
   updateHijackingCount();
 });
+
+// Adicionar listener para alternar a visibilidade das conexões de terceiros
+document.getElementById('toggleConnections').addEventListener('click', toggleThirdPartyConnections);
+
+// Adicionar listeners para os botões
+document.getElementById('resetHijacking').addEventListener('click', resetHijackingCount);
+document.getElementById('reloadPage').addEventListener('click', reloadPage);
 
 // Atualizar o número de tentativas de hijacking ao carregar o popup
 updateHijackingCount();
