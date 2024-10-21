@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Hijacking Test</title>
+</head>
+<body>
+    <h1>Testando Browser Hijacking</h1>
+    <p>Se o script abaixo for injetado, a extensão deve detectar um possível hijacking.</p>
+
+    <button id="injectScript">Injetar Script Externo</button>
+
+    <script>
+        // Função para injetar um script inline malicioso
+        document.getElementById('injectScript').addEventListener('click', function() {
+            const script = document.createElement('script');
+            script.textContent = "console.log('Script malicioso inline executado!');";
+            document.body.appendChild(script);
+
+            console.log("Tentativa de injeção de script inline feita!");
+        });
+    </script>
+</body>
+</html>
