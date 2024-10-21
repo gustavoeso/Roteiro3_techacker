@@ -1,14 +1,16 @@
-// Função para alternar a visibilidade das third-party connections
+// Função para alternar a visibilidade das third-party connections com efeito
 function toggleThirdPartyConnections() {
   const list = document.getElementById('thirdPartyConnectionsList');
   const toggleButton = document.getElementById('toggleConnections');
   
   if (list.classList.contains('hidden')) {
     list.classList.remove('hidden');
-    toggleButton.innerText = "⯅"; // Setinha para cima
+    list.classList.add('visible');  // Adiciona o efeito de cortina
+    toggleButton.classList.add('rotated');  // Aplica o efeito de rotação
   } else {
-    list.classList.add('hidden');
-    toggleButton.innerText = "⯆"; // Setinha para baixo
+    list.classList.remove('visible');
+    list.classList.add('hidden');  // Oculta com efeito de cortina
+    toggleButton.classList.remove('rotated');  // Remove o efeito de rotação
   }
 }
 
@@ -86,32 +88,39 @@ function calculatePrivacyScore(thirdPartyConnections, thirdPartyCookies, localSt
 
 // Função para atualizar a pontuação de privacidade no popup
 function updatePrivacyScore(hijackingCount) {
-  const thirdPartyConnections = document.getElementById('thirdPartyConnections').innerText.split(",").filter(item => item !== "Nenhuma");
+  // Coletar as informações do DOM atualizadas
+  const thirdPartyConnections = document.getElementById('thirdPartyConnectionsList').children.length;
   const thirdPartyCookies = parseInt(document.getElementById('cookiesInfo').innerText.split("/")[1].trim());
   const localStorageItems = parseInt(document.getElementById('localStorageInfo').innerText.trim());
   const canvasFingerprint = document.getElementById('canvasFingerprint').innerText;
 
-  chrome.storage.local.get(['hijackingDetected'], function(result) {
-    let hijackingDetected = result.hijackingDetected || hijackingCount > 0;
-    
-    const privacyScore = calculatePrivacyScore(thirdPartyConnections, thirdPartyCookies, localStorageItems, canvasFingerprint, hijackingDetected ? 1 : hijackingCount);
-    
-    // Atualizar o texto e a largura da barra de progresso
-    const scoreBar = document.getElementById('scoreBar');
-    const scoreText = document.getElementById('scoreText');
-    
-    scoreBar.style.width = `${privacyScore}%`;
-    scoreText.innerText = `Privacy Score: ${privacyScore}%`;
-
-    // Atualizar a cor da barra com base na pontuação
-    if (privacyScore >= 75) {
-      scoreBar.style.backgroundColor = "green";
-    } else if (privacyScore >= 50) {
-      scoreBar.style.backgroundColor = "orange";
-    } else {
-      scoreBar.style.backgroundColor = "red";
-    }
+  // Garantir que as informações estão sendo obtidas corretamente
+  console.log("Dados para o cálculo da pontuação:", {
+    thirdPartyConnections,
+    thirdPartyCookies,
+    localStorageItems,
+    canvasFingerprint,
+    hijackingCount
   });
+
+  // Calcular a pontuação de privacidade
+  const privacyScore = calculatePrivacyScore(thirdPartyConnections, thirdPartyCookies, localStorageItems, canvasFingerprint, hijackingCount);
+  
+  // Atualizar o texto e a largura da barra de progresso
+  const scoreBar = document.getElementById('scoreBar');
+  const scoreText = document.getElementById('scoreText');
+  
+  scoreBar.style.width = `${privacyScore}%`;
+  scoreText.innerText = `Privacy Score: ${privacyScore}%`;
+
+  // Atualizar a cor da barra com base na pontuação
+  if (privacyScore >= 75) {
+    scoreBar.style.backgroundColor = "green";
+  } else if (privacyScore >= 50) {
+    scoreBar.style.backgroundColor = "orange";
+  } else {
+    scoreBar.style.backgroundColor = "red";
+  }
 }
 
 // Função para atualizar o número de tentativas de hijacking por domínio
@@ -129,7 +138,7 @@ function updateHijackingCount() {
         ? `Yes - ${hijackingCount} tentativas detectadas no domínio` 
         : "No";
 
-      updatePrivacyScore(hijackingCount);
+      updatePrivacyScore(hijackingCount); // Sempre atualizar o score após verificar hijacking
     });
   });
 }
@@ -146,7 +155,7 @@ chrome.runtime.onMessage.addListener(function(message) {
   document.getElementById('localStorageInfo').innerText = localStorageInfo;
   document.getElementById('canvasFingerprint').innerText = canvasFingerprint;
 
-  updateHijackingCount();
+  updateHijackingCount(); // Atualizar o hijacking e o score após qualquer mudança
 });
 
 // Adicionar listener para alternar a visibilidade das conexões de terceiros
