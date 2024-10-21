@@ -8,6 +8,8 @@
       body { font-family: Arial, sans-serif; padding: 10px; }
       h1 { font-size: 16px; }
       .info { margin-bottom: 10px; }
+      button { padding: 5px 10px; background-color: #007BFF; color: white; border: none; cursor: pointer; }
+      button:hover { background-color: #0056b3; }
     </style>
   </head>
   <body>
@@ -32,6 +34,13 @@
       <strong>Canvas Fingerprint Detected:</strong> 
       <span id="canvasFingerprint">Loading...</span>
     </div>
+
+    <div class="info">
+      <strong>Browser Hijacking Detected:</strong> 
+      <span id="hijackingDetected">Loading...</span>
+    </div>
+
+    <button id="resetHijacking">Resetar Hijacking</button>
 
     <script src="popup.js"></script>
   </body>

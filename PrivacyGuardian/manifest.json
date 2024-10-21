@@ -1,33 +1,33 @@
 {
-    "manifest_version": 2,
-    "name": "PrivacyGuardian",
-    "version": "1.0",
-    "description": "Detecta e exibe conexões de terceiros, cookies, armazenamento local e fingerprints para proteger a privacidade do usuário.",
-    "permissions": [
-      "cookies",
-      "storage",
-      "webRequest",
-      "webRequestBlocking",
-      "*://*/*",
-      "tabs"
-    ],
-    "background": {
-      "scripts": ["background.js"],
-      "persistent": true
-    },
-    "browser_action": {
-      "default_popup": "popup.html",
-      "default_icon": {
-        "16": "icons/icon16.png",
-        "48": "icons/icon48.png",
-        "128": "icons/icon128.png"
-      }
-    },
-    "icons": {
+  "manifest_version": 2,
+  "name": "PrivacyGuardian",
+  "version": "1.0",
+  "description": "Detecta e exibe conexões de terceiros, cookies, armazenamento local e fingerprints para proteger a privacidade do usuário.",
+  "permissions": [
+    "cookies",
+    "storage",
+    "webRequest",
+    "webRequestBlocking",
+    "*://*/*",
+    "file://*/*",
+    "tabs"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
-    },
-    "web_accessible_resources": ["popup.js"]
-  }
-  
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": ["popup.js"]
+}
