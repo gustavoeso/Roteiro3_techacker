@@ -14,19 +14,79 @@ function getDomain(url) {
 }
 
 // Monitoramento de conexões de terceiros
-chrome.webRequest.onBeforeRequest.addListener(
-  function(details) {
-    const requestDomain = getDomain(details.url);
-    if (requestDomain !== currentTabDomain && currentTabDomain !== '') {
-      if (!thirdPartyConnections.includes(requestDomain)) {
-        thirdPartyConnections.push(requestDomain);
-      }
-    }
-    console.log("Conexões de terceiros atualizadas:", thirdPartyConnections);
-    updatePopup();
-  },
-  {urls: ["<all_urls>"]}
-);
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    const currentTabDomain = getDomain(tab.url);
+    
+    // Limpar as conexões de terceiros ao mudar de aba ou atualizar a aba
+    thirdPartyConnections = [];
+
+    chrome.webRequest.onBeforeRequest.addListener(
+      function(details) {
+        const requestDomain = getDomain(details.url);
+        if (requestDomain !== currentTabDomain && currentTabDomain !== '') {
+          if (!thirdPartyConnections.includes(requestDomain)) {
+            thirdPartyConnections.push(requestDomain);
+          }
+        }
+        updatePopup();
+      },
+      { urls: ["<all_urls>"], tabId: tabId } // Filtrar pela aba específica
+    );
+
+    updatePopup(); // Atualizar o popup com as informações mais recentes
+  }
+});
+
+// Função para extrair o domínio base e a porta de uma URL
+function getDomainAndPort(url) {
+  let link = document.createElement('a');
+  link.href = url;
+  const port = link.port || (link.protocol === 'https:' ? '443' : '80'); // Usar portas padrão se não especificado
+  return { domain: link.hostname, port: port };
+}
+
+// Verificar se uma porta é suspeita
+function isSuspiciousPort(port) {
+  // Lista de portas incomuns ou potencialmente perigosas
+  const suspiciousPorts = ['8080', '8443', '8888', '10000', '23', '110', '21']; // Inclua mais portas conforme necessário
+  return suspiciousPorts.includes(port);
+}
+
+// Monitoramento de conexões de terceiros e portas
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    const currentTabDomain = getDomainAndPort(tab.url).domain;
+
+    // Limpar as conexões de terceiros e portas ao mudar de aba ou atualizar a aba
+    thirdPartyConnections = [];
+    let hijackingDetected = false; // Flag para tentativas de hijacking
+
+    chrome.webRequest.onBeforeRequest.addListener(
+      function(details) {
+        const { domain, port } = getDomainAndPort(details.url);
+        if (domain !== currentTabDomain && currentTabDomain !== '') {
+          if (!thirdPartyConnections.includes(domain)) {
+            thirdPartyConnections.push(domain);
+          }
+          // Verificar se a porta é suspeita
+          if (isSuspiciousPort(port)) {
+            hijackingDetected = true; // Marcar hijacking se uma porta incomum for detectada
+            console.log(`Porta suspeita detectada: ${port} para o domínio ${domain}`);
+          }
+        }
+        updatePopup();
+      },
+      { urls: ["<all_urls>"], tabId: tabId } // Filtrar pela aba específica
+    );
+
+    // Atualizar o estado de hijacking no popup
+    chrome.storage.local.set({ hijackingDetected: hijackingDetected }, function() {
+      console.log("Hijacking baseado em portas suspeitas: ", hijackingDetected);
+      updatePopup(); // Atualizar o popup com as informações mais recentes
+    });
+  }
+});
 
 // Função para contar cookies por domínio
 function countCookies(tabUrl) {
@@ -36,7 +96,7 @@ function countCookies(tabUrl) {
 
     cookies.forEach(cookie => {
       const cookieDomain = cookie.domain.replace(/^\./, '');
-      const tabDomain = getDomain(tabUrl);
+      const tabDomain = getDomainAndPort(tabUrl).domain;
 
       if (cookieDomain === tabDomain) {
         firstPartyCookies++;

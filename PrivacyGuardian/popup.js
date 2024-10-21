@@ -12,6 +12,9 @@ function updateHijackingCount() {
       document.getElementById('hijackingDetected').innerText = hijackingCount > 0 
         ? `Yes - ${hijackingCount} tentativas detectadas no domínio` 
         : "No";
+
+      // Atualizar a pontuação de privacidade com os dados mais recentes
+      updatePrivacyScore(hijackingCount);
     });
   });
 }
@@ -32,14 +35,66 @@ function resetHijackingCount() {
   });
 }
 
-// Adicionar listener para o botão de reset
+// Função para recarregar a página
+function reloadPage() {
+  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+    chrome.tabs.reload(tabs[0].id);
+  });
+}
+
+// Função para calcular a pontuação de privacidade
+function calculatePrivacyScore(thirdPartyConnections, thirdPartyCookies, localStorageItems, canvasFingerprint, hijackingCount) {
+  let score = 100;
+
+  // Conexões de terceiros
+  if (thirdPartyConnections.length >= 10) {
+    score -= 20;
+  }
+
+  // Cookies de terceira parte
+  if (thirdPartyCookies >= 10) {
+    score -= 20;
+  }
+
+  // Local Storage
+  if (localStorageItems >= 6) {
+    score -= 20;
+  }
+
+  // Canvas Fingerprint
+  if (canvasFingerprint === "Sim") {
+    score -= 20;
+  }
+
+  // Tentativas de Hijacking
+  if (hijackingCount > 0) {
+    score -= 20;
+  }
+
+  return Math.max(0, Math.min(100, score)); // Garantir que a pontuação fique entre 0 e 100
+}
+
+// Função para atualizar a pontuação de privacidade no popup
+function updatePrivacyScore(hijackingCount) {
+  const thirdPartyConnections = document.getElementById('thirdPartyConnections').innerText.split(",").filter(item => item !== "Nenhuma");
+  const thirdPartyCookies = parseInt(document.getElementById('cookiesInfo').innerText.split("/")[1].trim());
+  const localStorageItems = parseInt(document.getElementById('localStorageInfo').innerText.trim());
+  const canvasFingerprint = document.getElementById('canvasFingerprint').innerText;
+
+  chrome.storage.local.get(['hijackingDetected'], function(result) {
+    let hijackingDetected = result.hijackingDetected || hijackingCount > 0;
+    
+    const privacyScore = calculatePrivacyScore(thirdPartyConnections, thirdPartyCookies, localStorageItems, canvasFingerprint, hijackingDetected ? 1 : hijackingCount);
+    document.getElementById('privacyScore').innerText = `Privacy Score: ${privacyScore}%`;
+  });
+}
+
+// Adicionar listeners para os botões
 document.getElementById('resetHijacking').addEventListener('click', resetHijackingCount);
+document.getElementById('reloadPage').addEventListener('click', reloadPage);
 
-// Receber as mensagens do background.js
+// Receber as mensagens do background.js e atualizar o popup
 chrome.runtime.onMessage.addListener(function(message) {
-  console.log("Mensagem recebida do background:", message);
-
-  // Atualizar o popup com as informações mais recentes
   const thirdPartyConnections = message.thirdPartyConnections || [];
   const cookiesInfo = message.cookiesInfo || "Nenhum";
   const localStorageInfo = message.localStorageInfo || "Nenhum";
@@ -50,9 +105,8 @@ chrome.runtime.onMessage.addListener(function(message) {
   document.getElementById('localStorageInfo').innerText = localStorageInfo;
   document.getElementById('canvasFingerprint').innerText = canvasFingerprint;
 
-  // Atualizar o número de tentativas de hijacking
   updateHijackingCount();
 });
 
-// Chamar a função para exibir as tentativas de hijacking ao carregar o popup
+// Atualizar o número de tentativas de hijacking ao carregar o popup
 updateHijackingCount();
