@@ -135,7 +135,7 @@ function updateHijackingCount() {
       let hijackingCount = result.hijackingPerDomain && result.hijackingPerDomain[domain] ? result.hijackingPerDomain[domain] : 0;
       
       document.getElementById('hijackingDetected').innerText = hijackingCount > 0 
-        ? `Yes - ${hijackingCount} tentativas detectadas no domínio` 
+        ? `${hijackingCount} tentativas no domínio` 
         : "No";
 
       updatePrivacyScore(hijackingCount); // Sempre atualizar o score após verificar hijacking
