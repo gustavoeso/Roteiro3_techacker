@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "PrivacyGuardian",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Detecta e exibe conexões de terceiros, cookies, armazenamento local e fingerprints para proteger a privacidade do usuário.",
   "permissions": [
     "cookies",
